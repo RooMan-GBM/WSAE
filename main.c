@@ -45,7 +45,7 @@ int argi=0;
 
 void printHelp()
 {
-    printf("Worlds Scariest Archive Extractor %d.%d%c\nUsage: [options] [-t] [path to.TOC file] [-i] [path to .IMG file]\nOptions:\n\t-l\tList files only\n\t-v\tDisplay verbose\n\t-h\tDisplays this screen\n",VERSION_Major,VERSION_Minor,VERTION_RelType);
+    printf("\nWorlds Scariest Archive Extractor %d.%d%c\nUsage: [options] [-t] [path to.TOC file] [-i] [path to .IMG file]\nOptions:\n\t-l\tList files only\n\t-v\tDisplay verbose\n\t-h\tDisplays this screen\n",VERSION_Major,VERSION_Minor,VERTION_RelType);
     exit(0);
 }
 
@@ -54,63 +54,63 @@ void printHelp()
 
 int main(int argc,char *argv[])
 {
-char buff[2024];
+char buff[2024]; //buffer to hold the current dir #oversized
 
-getcwd(buff,sizeof(buff));
-char tocFileLocation[1000];
-char imgFileLocation[1000];
-strcpy(tocFileLocation,buff);
-strcpy(imgFileLocation,buff);
-strcat(tocFileLocation,"/police.toc");
-strcat(imgFileLocation,"/police.img");
+getcwd(buff,sizeof(buff)); //copy the current working dir into buffer
+char tocFileLocation[1000]; //buffer for the tocfile path #oversized
+char imgFileLocation[1000]; // ditto 
+strcpy(tocFileLocation,buff); // copy the CWD path into the toc file path
+strcpy(imgFileLocation,buff); // ditto
+strcat(tocFileLocation,"/police.toc"); //append the filename
+strcat(imgFileLocation,"/police.img"); // ditto
 
 
-for (argi=1;argi<argc;argi++)
+for (argi=1;argi<argc;argi++) // scanning arguments
 {
-    char *ret=strpbrk(argv[argi],"-");
-        if (ret)
+    char *ret=strpbrk(argv[argi],"-"); // lokking for "-"
+        if (ret) //if a "-" was found scan for known arguments
         {
-            char *option=strpbrk(argv[argi],"dvslhti");
+            char *option=strpbrk(argv[argi],"dvslhti");//scanning...
 
-                if (option)
+                if (option) //if a valid argument was found...
                 {
-                    switch (*option)
+                    switch (*option) // which one exactly?
                     {
-                        case oDEBUG:
+                        case oDEBUG: //debug?
                             DEBUG=1;
                         break;
 
-                        case oLISTONLY:
+                        case oLISTONLY: //list only mode?
                             LIST=1;
                         break;
 
-                        case oVERBOSE:
+                        case oVERBOSE: //verbose mode?
                             VERBOSE=1;
                         break;
 
-                        case oSILENT:
+                        case oSILENT: //shh
                             SILENT=1;
                         break;
 
-                        case oHELP:
+                        case oHELP: //need a hand?
                             printHelp();
                         break;
 
-                        case oTOC:
+                        case oTOC: // im looking for the toc file in the next argument
                         sprintf(tocFileLocation,"%s",argv[argi+1]);
                         break;
 
-                        case oIMG:
+                        case oIMG: // im looking for the img file in the next argument
                         sprintf(imgFileLocation,"%s",argv[argi+1]);
                         break;
 
-                        default:
+                        default: // none of the above?
                             printHelp();
                         break;
                     }
                 }
 
-            else {printf("<PANIC> unknown argument %s\n",argv[argi]);printHelp();}
+            else {printf("<PANIC> unknown argument %s\n",argv[argi]);printHelp();} // no argument seemed to mach ones known
         }
 }
 
@@ -118,13 +118,13 @@ for (argi=1;argi<argc;argi++)
 
 
 
-    FILE *tocfp=fopen(tocFileLocation,"rb");
-    FILE *imgfp=fopen(imgFileLocation,"rb");
+    FILE *tocfp=fopen(tocFileLocation,"rb"); // open the toc file
+    FILE *imgfp=fopen(imgFileLocation,"rb"); // open the img file
 
-        if (tocfp!=NULL && imgfp!=NULL)
+        if (tocfp!=NULL && imgfp!=NULL) // are they open?
         {
 
-            int i=0,x=0,count=0,offOfFile [1000],sizeOfFile [10000];
+            int i=0,x=0,count=0,offOfFile [1000],sizeOfFile [1000]; // arrays for the file name/size/offset
             char nameOfFile[1000][1000],fileBuffer[1000];
 
             if(DEBUG||VERBOSE){if (!SILENT){printf("TOC file loaded at %p\nIMG file loaded at %p\n",&tocfp,&imgfp);}} // are we debugging?
@@ -148,11 +148,11 @@ for (argi=1;argi<argc;argi++)
                 // lets find the offset where the file is located
                 fread(&offOfFile[count],4,1,tocfp);
                 if (ferror(tocfp)&&!SILENT)
-                {printf("<PANIC> file segment %X unreadable",count);exit(EXIT_FAILURE);}
+                {printf("<PANIC> file segment %X unreadable",count);exit(EXIT_FAILURE);}// if reading from disc some parts may be unreadable
                 //lets find its size
                 fread(&sizeOfFile[count],4,1,tocfp);
                 if(ferror(tocfp)&&!SILENT)
-                {printf("<PANIC> file segment %X unreadable",count);exit(EXIT_FAILURE);}
+                {printf("<PANIC> file segment %X unreadable",count);exit(EXIT_FAILURE);}// if reading from disc some parts may be unreadable
                 //increment our file counter and loop back to top
                 count++;
                 // warning!! count= totalfiles+1
@@ -205,10 +205,10 @@ for (argi=1;argi<argc;argi++)
 
 
 
-                            FILE *of=fopen(fileBuffer,"w+b");
+                            FILE *of=fopen(fileBuffer,"w+b"); //open a file to write into
                             for(x=0;x<sizeOfFile[i];x++)
                             {
-                                fputc(fgetc(imgfp),of);
+                                fputc(fgetc(imgfp),of); //dump file from img <--speedy, glitchy, exciting!
                             }
 
                             fclose(of);
